@@ -1,0 +1,20 @@
+{
+  "name": "casadocodigo_cafesao",
+  "version": "1.0.0",
+  "description": "Projeto da alura - Versão Cafesão",
+  "main": "server.js",
+  "repository": "https://github.com/cafesao/casadocodigo_cafesao.git",
+  "author": "cafesao <gabriel.diasdutra2@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mongoose": "^5.9.10"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.3"
+  }
+}
