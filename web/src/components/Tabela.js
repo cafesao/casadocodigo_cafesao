@@ -1,8 +1,11 @@
+//Importando Modulos
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
+//Função Principal
 export default function Tabela(props) {
-  const TableHead = () => {
+  //Tabela HEAD
+  function TableHead() {
     return (
       <thead>
         <tr>
@@ -16,20 +19,36 @@ export default function Tabela(props) {
     )
   }
 
-  const TableBody = (props) => {
-    const linhas = props.livros.map((valor, index) => {
+  //Tabela BODY
+  function TableBody(props) {
+    //Cria o HTML referente aquele livro
+    function criarLivro(nome, autor, dataLancamento, preco, index) {
       return (
         <tr key={index}>
-          <td>{valor.nome}</td>
-          <td>{valor.autor}</td>
-          <td>{valor.dataLancamento}</td>
-          <td>{valor.preco}</td>
+          <td>{nome}</td>
+          <td>{autor}</td>
+          <td>{dataLancamento}</td>
+          <td>{preco}</td>
           <td>
-            <button onClick={() => setValorModf([valor.nome, index])}>
+            <button
+              className="waves-effect waves-light btn-small"
+              onClick={() => setValorModf([nome, index])}
+            >
               Remover
             </button>
           </td>
         </tr>
+      )
+    }
+
+    //Utiliza a função criaLivro() para criar o HTML
+    const linhas = props.livros.map((valor, index) => {
+      return criarLivro(
+        valor.nome,
+        valor.autor,
+        valor.dataLancamento,
+        valor.preco,
+        index,
       )
     })
 
@@ -52,7 +71,7 @@ export default function Tabela(props) {
   const { livros, removerLivroPagina } = props
 
   return (
-    <table>
+    <table className="centered highlight responsive-table">
       <TableHead />
       <TableBody livros={livros} />
     </table>
