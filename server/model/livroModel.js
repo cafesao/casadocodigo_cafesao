@@ -20,11 +20,6 @@ const LivroSchema = new Schema({
     type: Number,
     required: true,
   },
-  sinopse: {
-    type: String,
-    required: false,
-    default: 'Não contém',
-  },
 })
 
 //Exportando modelo
