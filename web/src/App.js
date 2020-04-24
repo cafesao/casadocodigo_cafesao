@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react'
+//Importações Modulos
+import React, { useState, useEffect, Fragment } from 'react'
 import axios from 'axios'
+
+//Importando CSS/Materialize
+import 'materialize-css/dist/css/materialize.min.css'
+
+//Importando Componentes
+import Header from './components/Header'
 import Tabela from './components/Tabela'
+import Form from './components/Form'
 
-import './App.css'
-
+//Funcão Principal
 export default function App() {
-  const [livros, setLivros] = useState()
+  const [livros, setLivros] = useState([])
 
   function removerLivroPagina(index) {
     setLivros(
@@ -13,6 +20,12 @@ export default function App() {
         return posAtual !== index
       }),
     )
+  }
+
+  function adicionarLivro(objLivro) {
+    const insert = livros.slice()
+    insert.push(objLivro)
+    setLivros(insert)
   }
 
   useEffect(() => {
@@ -30,9 +43,27 @@ export default function App() {
   return (
     <div className="App">
       {livros ? (
-        <Tabela livros={livros} removerLivroPagina={removerLivroPagina} />
+        <Fragment>
+          <Header />
+          <div className="container">
+            <Tabela livros={livros} removerLivroPagina={removerLivroPagina} />
+            <Form adicionarLivro={adicionarLivro} />
+          </div>
+        </Fragment>
       ) : (
-        <h1>Carregando...</h1>
+        <div className="preloader-wrapper small active">
+          <div className="spinner-layer spinner-green-only">
+            <div className="circle-clipper left">
+              <div className="circle"></div>
+            </div>
+            <div className="gap-patch">
+              <div className="circle"></div>
+            </div>
+            <div className="circle-clipper right">
+              <div className="circle"></div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
