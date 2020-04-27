@@ -12,7 +12,7 @@ const LivroSchema = new Schema({
     type: String,
     required: true,
   },
-  dataLancamento: {
+  anoLancamento: {
     type: Number,
     required: true,
   },
