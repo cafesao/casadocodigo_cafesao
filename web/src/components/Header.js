@@ -5,19 +5,19 @@ import React from 'react'
 export default function Header() {
   return (
     <nav>
-      <div class="nav-wrapper indigo">
-        <a href="#" class="brand-logo">
+      <div className="nav-wrapper indigo">
+        <a href="www.google.com.br" className="brand-logo">
           Casa do Código
         </a>
-        <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <ul id="nav-mobile" className="right hide-on-med-and-down">
           <li>
-            <a href="#">Livros</a>
+            <a href="www.google.com.br">Livros</a>
           </li>
           <li>
-            <a href="#">Autores</a>
+            <a href="www.google.com.br">Autores</a>
           </li>
           <li>
-            <a href="#">Sobre</a>
+            <a href="www.google.com.br">Sobre</a>
           </li>
         </ul>
       </div>
