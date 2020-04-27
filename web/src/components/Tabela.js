@@ -4,6 +4,13 @@ import axios from 'axios'
 
 //Função Principal
 export default function Tabela(props) {
+  //States
+  //Livro que quer modificar
+  const [valorModf, setValorModf] = useState([])
+
+  //Props vindo do App
+  const { livros, removerLivroPagina, adicionarLivroModf } = props
+
   //Tabela HEAD
   function TableHead() {
     return (
@@ -14,6 +21,7 @@ export default function Tabela(props) {
           <th>Lançamento</th>
           <th>Preço</th>
           <th>Remover</th>
+          <th>Modificar</th>
         </tr>
       </thead>
     )
@@ -22,19 +30,27 @@ export default function Tabela(props) {
   //Tabela BODY
   function TableBody(props) {
     //Cria o HTML referente aquele livro
-    function criarLivro(nome, autor, dataLancamento, preco, index) {
+    function criarLivro(nome, autor, anoLancamento, preco, index) {
       return (
         <tr key={index}>
           <td>{nome}</td>
           <td>{autor}</td>
-          <td>{dataLancamento}</td>
+          <td>{anoLancamento}</td>
           <td>{preco}</td>
           <td>
             <button
               className="waves-effect waves-light btn-small"
-              onClick={() => setValorModf([nome, index])}
+              onClick={() => setValorModf([nome, index, 'remover'])}
             >
               Remover
+            </button>
+          </td>
+          <td>
+            <button
+              className="waves-effect waves-light btn-small"
+              onClick={() => setValorModf([nome, index, 'modificar'])}
+            >
+              Modificar
             </button>
           </td>
         </tr>
@@ -46,7 +62,7 @@ export default function Tabela(props) {
       return criarLivro(
         valor.nome,
         valor.autor,
-        valor.dataLancamento,
+        valor.anoLancamento,
         valor.preco,
         index,
       )
@@ -55,20 +71,22 @@ export default function Tabela(props) {
     return <tbody>{linhas}</tbody>
   }
 
-  const [valorModf, setValorModf] = useState()
-
   useEffect(() => {
-    async function removerLivro() {
-      await axios.delete(`http://localhost:3001/api/livros/${valorModf[0]}`)
-      removerLivroPagina(valorModf[1])
+    async function removerLivroServer() {
+      try {
+        await axios.delete(`http://localhost:3001/api/livros/${valorModf[0]}`)
+        removerLivroPagina(valorModf[1])
+      } catch (error) {
+        console.log(error)
+      }
     }
 
-    if (valorModf) {
-      removerLivro()
+    if (valorModf[2] === 'remover') {
+      removerLivroServer()
+    } else if (valorModf[2] === 'modificar') {
+      adicionarLivroModf(valorModf[1])
     }
   }, [valorModf])
-
-  const { livros, removerLivroPagina } = props
 
   return (
     <table className="centered highlight responsive-table">
