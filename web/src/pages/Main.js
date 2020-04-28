@@ -7,9 +7,9 @@ import { useAlert } from 'react-alert'
 import 'materialize-css/dist/css/materialize.min.css'
 
 //Importando Componentes
-import Header from './components/Header'
-import Tabela from './components/Tabela'
-import Form from './components/Form'
+import Header from '../components/Header'
+import Tabela from '../components/Tabela'
+import Form from '../components/Form'
 
 //Funcão Principal
 export default function App() {
