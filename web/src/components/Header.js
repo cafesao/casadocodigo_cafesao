@@ -1,23 +1,24 @@
 //Importando Modulos
 import React from 'react'
+import LinkWrapper from './LinkWrapper'
 
 //Função Principal
 export default function Header() {
   return (
     <nav>
       <div className="nav-wrapper indigo">
-        <a href="www.google.com.br" className="brand-logo">
+        <LinkWrapper to="/" className="brand-logo">
           Casa do Código
-        </a>
+        </LinkWrapper>
         <ul id="nav-mobile" className="right hide-on-med-and-down">
           <li>
-            <a href="www.google.com.br">Livros</a>
+            <LinkWrapper to="/livros">Livros</LinkWrapper>
           </li>
           <li>
-            <a href="www.google.com.br">Autores</a>
+            <LinkWrapper to="/autores">Autores</LinkWrapper>
           </li>
           <li>
-            <a href="www.google.com.br">Sobre</a>
+            <LinkWrapper to="/sobre">Sobre</LinkWrapper>
           </li>
         </ul>
       </div>
