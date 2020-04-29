@@ -1,63 +1,49 @@
-//Importações Modulos
-import React, { useState, useEffect, Fragment } from 'react'
-import axios from 'axios'
+import React, { useState, useEffect } from 'react'
 import { useAlert } from 'react-alert'
 
-//Importando CSS/Materialize
 import 'materialize-css/dist/css/materialize.min.css'
 
-//Importando Componentes
 import Header from '../components/Header'
 import Tabela from '../components/Tabela'
 import Form from '../components/Form'
 
-//Funcão Principal
-export default function App() {
-  //Para criar alertas
+import dataServer from '../function/dataServer'
+
+export default function Main() {
   const alert = useAlert()
 
-  //States
-  //Livros do Back-End
   const [livros, setLivros] = useState([])
-  //Livro que quer modificar
   const [livroModf, setLivroModf] = useState([])
 
-  function mostrarAlerta(msng, tipo = 'success') {
-    alert[tipo](msng)
+  function mostrarAlerta(mnsg, tipo = 'success') {
+    alert[tipo](mnsg)
   }
 
-  //Adiciona o livro que a gente quer modificar no state LivroModf
   function adicionarLivroModf(index) {
     setLivroModf([livros[index], index])
   }
 
-  //Retorna o state LivroModf
   function buscarLivroModf() {
     return livroModf
   }
 
-  //Adiciona Livro na Pagina
   function adicionarLivroPagina(objLivro) {
-    const insert = livros.slice()
-    insert.push(objLivro)
-    setLivros(insert)
+    setLivros([...livros, objLivro])
     mostrarAlerta('Foi adicionado o livro com sucesso!')
   }
 
-  //Modifica o Livro na Pagina
   function modificarLivroPagina(objLivro) {
     const insert = livros.slice()
     const index = livroModf[1]
 
-    //Replace do livro modificado no livro original
     insert[index] = objLivro
+
     setLivros(insert)
     mostrarAlerta('Foi modificado o livro com sucesso!')
   }
 
-  //Remove o Livro na Pagina
   function removerLivroPagina(index) {
-    setLivros(
+    setLivros((livros) =>
       livros.filter((livro, posAtual) => {
         return posAtual !== index
       }),
@@ -66,26 +52,25 @@ export default function App() {
   }
 
   useEffect(() => {
-    //Buscar os livros no Back-End
     async function fetchData() {
-      try {
-        const livrosData = await axios.get('http://localhost:3001/api/livros')
-        setLivros(livrosData.data)
-        mostrarAlerta('Bem-Vindo a casa do código!', 'info')
-      } catch (err) {
+      const axiosData = await dataServer('get')
+      if (axiosData === 'error') {
         mostrarAlerta(
           'Tivemos um problema ao se conectar com o server',
           'error',
         )
+      } else {
+        setLivros(axiosData)
+        mostrarAlerta('Bem vindo a casa do código', 'info')
       }
     }
     fetchData()
   }, [])
 
   return (
-    <div className="App">
+    <div className="Main">
       {livros ? (
-        <Fragment>
+        <>
           <Header />
           <div className="container">
             <Tabela
@@ -99,9 +84,8 @@ export default function App() {
               buscarLivroModf={buscarLivroModf}
             />
           </div>
-        </Fragment>
+        </>
       ) : (
-        //Circulo de carregamento
         <div className="preloader-wrapper small active">
           <div className="spinner-layer spinner-green-only">
             <div className="circle-clipper left">
