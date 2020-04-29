@@ -1,17 +1,12 @@
-//Importando Modulos
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 
-//Função Principal
+import dataServer from '../function/dataServer'
+
 export default function Tabela(props) {
-  //States
-  //Livro que quer modificar
   const [valorModf, setValorModf] = useState([])
 
-  //Props vindo do App
   const { livros, removerLivroPagina, adicionarLivroModf } = props
 
-  //Tabela HEAD
   function TableHead() {
     return (
       <thead>
@@ -27,9 +22,7 @@ export default function Tabela(props) {
     )
   }
 
-  //Tabela BODY
   function TableBody(props) {
-    //Cria o HTML referente aquele livro
     function criarLivro(nome, autor, anoLancamento, preco, index) {
       return (
         <tr key={index}>
@@ -57,7 +50,6 @@ export default function Tabela(props) {
       )
     }
 
-    //Utiliza a função criaLivro() para criar o HTML
     const linhas = props.livros.map((valor, index) => {
       return criarLivro(
         valor.nome,
@@ -73,16 +65,12 @@ export default function Tabela(props) {
 
   useEffect(() => {
     async function removerLivroServer() {
-      try {
-        await axios.delete(`http://localhost:3001/api/livros/${valorModf[0]}`)
-        removerLivroPagina(valorModf[1])
-      } catch (error) {
-        console.log(error)
-      }
+      await dataServer('delete', {}, valorModf[0])
     }
 
     if (valorModf[2] === 'remover') {
       removerLivroServer()
+      removerLivroPagina(valorModf[1])
     } else if (valorModf[2] === 'modificar') {
       adicionarLivroModf(valorModf[1])
     }
