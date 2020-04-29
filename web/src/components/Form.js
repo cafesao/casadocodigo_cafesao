@@ -1,21 +1,16 @@
-//Importando Modulos
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 
-//Função Principal
+import dataServer from '../function/dataServer'
+
 export default function Form(props) {
-  //States
   const [nome, setNome] = useState('')
   const [autor, setAutor] = useState('')
   const [anoLancamento, setAnoLancamento] = useState()
   const [preco, setPreco] = useState()
-  //Boolean que controla PUT ou POST
   const [acao, setAcao] = useState('post')
 
-  //Props vindo o APP
   const { adicionarLivroPagina, modificarLivroPagina, buscarLivroModf } = props
 
-  //Executa function que retorna o livroModf
   let livroModf = buscarLivroModf()
 
   useEffect(() => {
@@ -26,24 +21,22 @@ export default function Form(props) {
       document.querySelector('input#preco').value = obj.preco
     }
 
+    function modificaStatesInput(obj) {
+      setNome(obj.nome)
+      setAutor(obj.autor)
+      setAnoLancamento(obj.anoLancamento)
+      setPreco(obj.preco)
+    }
+
     if (livroModf.length > 0) {
-      //Modifica os states conforme o livroModf
-      setNome(livroModf[0].nome)
-      setAutor(livroModf[0].autor)
-      setAnoLancamento(livroModf[0].anoLancamento)
-      setPreco(livroModf[0].preco)
-
-      //Modifica ação (true = PUT)
-      setAcao('put')
-
-      //Chama a function para modificar os campos do Input
+      modificaStatesInput(livroModf[0])
       modificaCamposInput(livroModf[0])
+
+      setAcao('put')
     }
   }, [livroModf])
 
-  //Insere o livro no server
   async function inserirLivroServer(e) {
-    //Prepara o Objeto conforme os states
     function prepararObjeto() {
       const objLivro = {
         nome,
@@ -54,7 +47,6 @@ export default function Form(props) {
       return objLivro
     }
 
-    //Limpa os campos de Input
     function limparCampos() {
       document.querySelector('input#nome').value = ''
       document.querySelector('input#autor').value = ''
@@ -62,40 +54,33 @@ export default function Form(props) {
       document.querySelector('input#preco').value = ''
     }
 
-    //Previne default do Form
-    e.preventDefault()
-
-    //Chama a function para preparar objeto
-    const objLivro = prepararObjeto()
-
-    //Verifica que tipo de requisição e para ser feita para o server
-    if (acao === 'put') {
-      try {
-        await axios.put(
-          `http://localhost:3001/api/livros/${objLivro.nome}`,
-          objLivro,
-        )
+    async function addPut() {
+      const data = await dataServer('put', objLivro, objLivro.nome)
+      if (data === 'error') console.log('error')
+      else {
         limparCampos()
 
-        //Chama função para modificar o livro na pagina
         modificarLivroPagina(objLivro)
 
-        //Modifica ação para 'post', para futuras alterações
         setAcao('post')
-      } catch (error) {
-        console.log(error)
-      }
-    } else {
-      try {
-        await axios.post('http://localhost:3001/api/livros', objLivro)
-        limparCampos()
-
-        //Chama a função para adicionar o novo livro na pagina
-        adicionarLivroPagina(objLivro)
-      } catch (error) {
-        console.log(error)
       }
     }
+
+    async function addPost() {
+      const data = await dataServer('post', objLivro)
+      if (data === 'error') console.log('error')
+      else {
+        limparCampos()
+
+        adicionarLivroPagina(objLivro)
+      }
+    }
+    e.preventDefault()
+
+    const objLivro = prepararObjeto()
+
+    if (acao === 'put') addPut()
+    else addPost()
   }
 
   return (
