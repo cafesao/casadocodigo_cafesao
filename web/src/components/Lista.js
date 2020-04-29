@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 import { useAlert } from 'react-alert'
 
 import '../css/lista.css'
+
+import dataServer from '../function/dataServer'
 
 export default function Lista(props) {
   const alert = useAlert()
@@ -10,10 +11,6 @@ export default function Lista(props) {
   const [lista, setLista] = useState([])
 
   const { prop } = props
-
-  function mostrarAlerta(msng, tipo = 'success') {
-    alert[tipo](msng)
-  }
 
   function Lista() {
     const retornoLista = lista.map((nome, index) => {
@@ -34,24 +31,20 @@ export default function Lista(props) {
     else if (prop === 'Autores') propFormated = 'autor'
 
     async function fetchData(propFormated) {
-      try {
-        const axiosData = await axios.get('http://localhost:3001/api/livros')
+      const axiosData = await dataServer('get')
 
-        //Pega apenas o que se quer do Object axiosData
-        const objectData = axiosData.data.map((valor) => {
+      if (axiosData === 'error') {
+        alert.error('Tivemos um problema ao se conectar com o server')
+      } else {
+        const objectData = axiosData.map((valor) => {
           return valor[propFormated]
         })
-
         setLista(objectData)
-      } catch (err) {
-        mostrarAlerta(
-          'Tivemos um problema ao se conectar com o server',
-          'error',
-        )
       }
     }
+
     fetchData(propFormated)
-  }, [])
+  }, [prop])
 
   return (
     <div className="lista">
