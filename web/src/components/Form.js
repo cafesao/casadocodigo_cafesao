@@ -1,31 +1,64 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, memo } from 'react'
+import { useAlert } from 'react-alert'
+
+import Grid from '@material-ui/core/Grid'
+import TextField from '@material-ui/core/TextField'
+import Button from '@material-ui/core/Button'
 
 import dataServer from '../function/dataServer'
 
-export default function Form(props) {
+function Form(props) {
+  const alert = useAlert()
+
+  const [_id, set_Id] = useState('')
   const [nome, setNome] = useState('')
   const [autor, setAutor] = useState('')
-  const [anoLancamento, setAnoLancamento] = useState()
-  const [preco, setPreco] = useState()
+  const [anoLancamento, setAnoLancamento] = useState('')
+  const [preco, setPreco] = useState('')
   const [acao, setAcao] = useState('post')
+
+  const [estadoInput, setEstadoInput] = useState(false)
+
+  const Data = new Date()
 
   const { adicionarLivroPagina, modificarLivroPagina, buscarLivroModf } = props
 
   let livroModf = buscarLivroModf()
 
+  function mudaEstadoInput() {
+    if (
+      nome.length > 0 ||
+      autor.length > 0 ||
+      anoLancamento.length > 0 ||
+      preco.length > 0
+    ) {
+      setEstadoInput(true)
+    } else {
+      setEstadoInput(false)
+    }
+  }
+
+  function modificaStatesInput(
+    obj = { _id: '', nome: '', autor: '', anoLancamento: '', preco: '' },
+  ) {
+    set_Id(obj._id)
+    setNome(obj.nome)
+    setAutor(obj.autor)
+    setAnoLancamento(obj.anoLancamento)
+    setPreco(obj.preco)
+  }
+
   useEffect(() => {
     function modificaCamposInput(obj) {
-      document.querySelector('input#nome').value = obj.nome
+      setEstadoInput(true)
+
+      let inputNome = document.querySelector('input#nome')
+      inputNome.value = obj.nome
+      inputNome.setAttribute('disabled', true)
+
       document.querySelector('input#autor').value = obj.autor
       document.querySelector('input#anoLancamento').value = obj.anoLancamento
       document.querySelector('input#preco').value = obj.preco
-    }
-
-    function modificaStatesInput(obj) {
-      setNome(obj.nome)
-      setAutor(obj.autor)
-      setAnoLancamento(obj.anoLancamento)
-      setPreco(obj.preco)
     }
 
     if (livroModf.length > 0) {
@@ -37,18 +70,30 @@ export default function Form(props) {
   }, [livroModf])
 
   async function inserirLivroServer(e) {
-    function prepararObjeto() {
-      const objLivro = {
-        nome,
-        autor,
-        anoLancamento: parseInt(anoLancamento),
-        preco: parseFloat(preco),
+    function prepararObjeto(boolean) {
+      if (boolean) {
+        return {
+          nome,
+          autor,
+          anoLancamento: parseInt(anoLancamento),
+          preco: parseFloat(preco),
+        }
+      } else {
+        return {
+          _id,
+          nome,
+          autor,
+          anoLancamento: parseInt(anoLancamento),
+          preco: parseFloat(preco),
+        }
       }
-      return objLivro
     }
 
     function limparCampos() {
-      document.querySelector('input#nome').value = ''
+      let inputNome = document.querySelector('input#nome')
+      inputNome.value = ''
+      inputNome.removeAttribute('disabled')
+
       document.querySelector('input#autor').value = ''
       document.querySelector('input#anoLancamento').value = ''
       document.querySelector('input#preco').value = ''
@@ -56,9 +101,14 @@ export default function Form(props) {
 
     async function addPut() {
       const data = await dataServer('put', objLivro, objLivro.nome)
-      if (data === 'error') console.log('error')
+      if (data === 'erro')
+        alert.error('Tivemos um problema ao modificar seu livro!')
       else {
         limparCampos()
+
+        setEstadoInput(false)
+
+        objLivro = prepararObjeto(false)
 
         modificarLivroPagina(objLivro)
 
@@ -68,83 +118,100 @@ export default function Form(props) {
 
     async function addPost() {
       const data = await dataServer('post', objLivro)
-      if (data === 'error') console.log('error')
+      if (data === 'erro')
+        alert.error('Tivemos um problema ao modificar seu livro!')
       else {
         limparCampos()
+
+        setEstadoInput(false)
+
+        objLivro = prepararObjeto(false)
 
         adicionarLivroPagina(objLivro)
       }
     }
     e.preventDefault()
 
-    const objLivro = prepararObjeto()
+    let objLivro = prepararObjeto(true)
 
     if (acao === 'put') addPut()
     else addPost()
+    modificaStatesInput()
   }
 
   return (
-    <div className="row">
-      <div className="alert"></div>
-      <form onSubmit={inserirLivroServer} className="col s12">
-        <div className="input-field col s6">
-          <input
+    <form onSubmit={inserirLivroServer}>
+      <Grid container spacing={4} alignItems="center">
+        <Grid item>
+          <TextField
             id="nome"
-            type="text"
-            className="validate"
-            name="nome"
+            label="Nome do Livro"
+            variant="outlined"
             defaultValue={nome}
             onChange={(e) => setNome(e.target.value)}
+            onFocus={() => setEstadoInput(true)}
+            onBlur={mudaEstadoInput}
+            InputLabelProps={{ shrink: estadoInput }}
             required
           />
-          <label className="input-field" htmlFor="nome">
-            Nome
-          </label>
-        </div>
-        <div className="input-field col s6">
-          <input
+        </Grid>
+        <Grid item>
+          <TextField
             id="autor"
-            type="text"
-            name="autor"
+            label="Nome do Autor"
+            variant="outlined"
             defaultValue={autor}
             onChange={(e) => setAutor(e.target.value)}
+            onFocus={() => setEstadoInput(true)}
+            onBlur={mudaEstadoInput}
+            InputLabelProps={{ shrink: estadoInput }}
             required
           />
-          <label className="input-field" htmlFor="autor">
-            Autor
-          </label>
-        </div>
-        <div className="input-field col s6">
-          <label className="input-field" htmlFor="anoLancamento">
-            Ano de Lançamento
-          </label>
-          <input
+        </Grid>
+        <Grid item>
+          <TextField
             id="anoLancamento"
+            label="Ano do Lançamento"
+            variant="outlined"
             type="number"
-            name="anoLancamento"
             defaultValue={anoLancamento}
-            onChange={(e) => setAnoLancamento(e.target.value)}
+            onChange={(e) => {
+              setAnoLancamento(e.target.value)
+              setEstadoInput(true)
+            }}
+            onFocus={() => setEstadoInput(true)}
+            onBlur={mudaEstadoInput}
+            inputProps={{ min: 1800, max: Data.getFullYear(), step: 1 }}
+            InputLabelProps={{ shrink: estadoInput }}
             required
           />
-        </div>
-        <div className="input-field col s6">
-          <label className="input-field" htmlFor="preco">
-            Preço
-          </label>
-          <input
+        </Grid>
+        <Grid item>
+          <TextField
             id="preco"
+            label="Preço do Livro"
+            variant="outlined"
             type="number"
-            step="0.01"
-            name="preco"
             defaultValue={preco}
-            onChange={(e) => setPreco(e.target.value)}
+            onChange={(e) => {
+              setPreco(e.target.value)
+              setEstadoInput(true)
+            }}
+            onFocus={() => setEstadoInput(true)}
+            onBlur={mudaEstadoInput}
+            inputProps={{ min: 1, max: 1000, step: 0.01 }}
+            InputLabelProps={{ shrink: estadoInput }}
             required
           />
-        </div>
-        <button className="btn waves-effect waves-light" type="submit">
-          Salvar<i className="material-icons right">send</i>
-        </button>
-      </form>
-    </div>
+        </Grid>
+        <Grid item>
+          <Button variant="contained" color="primary" type="submit">
+            Salvar
+          </Button>
+        </Grid>
+      </Grid>
+    </form>
   )
 }
+
+export default memo(Form)

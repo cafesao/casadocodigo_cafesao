@@ -1,9 +1,9 @@
 //Importando Modulos
-import React from 'react'
+import React, { memo } from 'react'
 import LinkWrapper from './LinkWrapper'
 
 //Função Principal
-export default function Header() {
+function Header() {
   return (
     <nav>
       <div className="nav-wrapper indigo">
@@ -25,3 +25,5 @@ export default function Header() {
     </nav>
   )
 }
+
+export default memo(Header)

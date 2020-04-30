@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useAlert } from 'react-alert'
 
-import 'materialize-css/dist/css/materialize.min.css'
-
 import Header from '../components/Header'
+import Pesquisar from '../components/Pesquisar'
 import Tabela from '../components/Tabela'
 import Form from '../components/Form'
 
@@ -14,14 +13,38 @@ export default function Main() {
 
   const [livros, setLivros] = useState([])
   const [livroModf, setLivroModf] = useState([])
+  const [recarregar, setRecarregar] = useState(false)
 
-  function mostrarAlerta(mnsg, tipo = 'success') {
-    alert[tipo](mnsg)
-  }
+  const campos = useMemo(
+    () => [
+      {
+        titulo: 'Livro',
+        prop: 'nome',
+      },
+      {
+        titulo: 'Autor',
+        prop: 'autor',
+      },
+      {
+        titulo: 'Lançamento',
+        prop: 'anoLancamento',
+      },
+      {
+        titulo: 'Preço R$',
+        prop: 'preco',
+      },
+    ],
+    [],
+  )
 
-  function adicionarLivroModf(index) {
-    setLivroModf([livros[index], index])
-  }
+  //Usar useCallback() resolveu o problema do render desnecessario na Table, toda vez que clicava no botão "modificar"...não sei pq resolveu
+  const adicionarLivroModf = useCallback((id, dados) => {
+    setLivroModf(() => {
+      return dados.filter((livro, posAtual) => {
+        return livro._id === id
+      })
+    })
+  }, [])
 
   function buscarLivroModf() {
     return livroModf
@@ -29,77 +52,83 @@ export default function Main() {
 
   function adicionarLivroPagina(objLivro) {
     setLivros([...livros, objLivro])
-    mostrarAlerta('Foi adicionado o livro com sucesso!')
+    alert.success('Foi adicionado o livro com sucesso!')
   }
 
   function modificarLivroPagina(objLivro) {
-    const insert = livros.slice()
-    const index = livroModf[1]
+    const mapeado = livros.map((valor, index) => {
+      if (valor._id === objLivro._id) {
+        valor = objLivro
+        return valor
+      }
+      return valor
+    })
 
-    insert[index] = objLivro
-
-    setLivros(insert)
-    mostrarAlerta('Foi modificado o livro com sucesso!')
+    setLivros(mapeado)
+    alert.success('Foi modificado o livro com sucesso!')
   }
 
-  function removerLivroPagina(index) {
+  const removerLivroPagina = useCallback((id) => {
     setLivros((livros) =>
       livros.filter((livro, posAtual) => {
-        return posAtual !== index
+        return livro._id !== id
       }),
     )
-    mostrarAlerta('Foi removido o livro com sucesso!')
-  }
+    alert.success('Foi removido o livro com sucesso!')
+  }, [])
 
-  useEffect(() => {
+  const pesquisarLivroServer = useCallback((nome) => {
     async function fetchData() {
-      const axiosData = await dataServer('get')
-      if (axiosData === 'error') {
-        mostrarAlerta(
-          'Tivemos um problema ao se conectar com o server',
-          'error',
-        )
+      const axiosData = await dataServer('get', {}, nome)
+      if (axiosData === 'erro') {
+        alert.error('Ops, não existe esse livro')
       } else {
+        alert.success('Foi achado seu livro!')
         setLivros(axiosData)
-        mostrarAlerta('Bem vindo a casa do código', 'info')
       }
     }
     fetchData()
   }, [])
 
+  const recarregarLivroServer = useCallback(() => {
+    setRecarregar(!recarregar)
+  }, [recarregar])
+
+  useEffect(() => {
+    async function fetchData() {
+      const axiosData = await dataServer('get')
+      if (axiosData === 'erro') {
+        alert.error('Tivemos um problema ao se conectar com o server')
+      } else {
+        setLivros(axiosData)
+        alert.info('Bem vindo a casa do código')
+      }
+    }
+    fetchData()
+  }, [recarregar])
+
   return (
     <div className="Main">
-      {livros ? (
-        <>
-          <Header />
-          <div className="container">
-            <Tabela
-              livros={livros}
-              removerLivroPagina={removerLivroPagina}
-              adicionarLivroModf={adicionarLivroModf}
-            />
-            <Form
-              adicionarLivroPagina={adicionarLivroPagina}
-              modificarLivroPagina={modificarLivroPagina}
-              buscarLivroModf={buscarLivroModf}
-            />
-          </div>
-        </>
-      ) : (
-        <div className="preloader-wrapper small active">
-          <div className="spinner-layer spinner-green-only">
-            <div className="circle-clipper left">
-              <div className="circle"></div>
-            </div>
-            <div className="gap-patch">
-              <div className="circle"></div>
-            </div>
-            <div className="circle-clipper right">
-              <div className="circle"></div>
-            </div>
-          </div>
+      <>
+        <Header />
+        <div className="container">
+          <Pesquisar
+            pesquisarLivroServer={pesquisarLivroServer}
+            recarregarLivroServer={recarregarLivroServer}
+          />
+          <Tabela
+            campos={campos}
+            dados={livros}
+            removerLivroPagina={removerLivroPagina}
+            adicionarLivroModf={adicionarLivroModf}
+          />
+          <Form
+            adicionarLivroPagina={adicionarLivroPagina}
+            modificarLivroPagina={modificarLivroPagina}
+            buscarLivroModf={buscarLivroModf}
+          />
         </div>
-      )}
+      </>
     </div>
   )
 }
