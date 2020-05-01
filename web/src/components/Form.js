@@ -1,15 +1,27 @@
 import React, { useState, useEffect, memo } from 'react'
-import { useAlert } from 'react-alert'
 
 import Grid from '@material-ui/core/Grid'
 import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
+import { makeStyles } from '@material-ui/core/styles'
 
 import dataServer from '../function/dataServer'
+import Toast from './Toast'
+
+const useStyle = makeStyles({
+  form: {
+    marginTop: '20px',
+  },
+})
 
 function Form(props) {
-  const alert = useAlert()
+  const style = useStyle()
 
+  const [mensagem, setMensagem] = useState({
+    open: false,
+    texto: '',
+    tipo: 'success',
+  })
   const [_id, set_Id] = useState('')
   const [nome, setNome] = useState('')
   const [autor, setAutor] = useState('')
@@ -102,7 +114,11 @@ function Form(props) {
     async function addPut() {
       const data = await dataServer('put', objLivro, objLivro.nome)
       if (data === 'erro')
-        alert.error('Tivemos um problema ao modificar seu livro!')
+        setMensagem({
+          open: true,
+          texto: 'Tivemos um problema ao modificar seu livro!',
+          tipo: 'error',
+        })
       else {
         limparCampos()
 
@@ -119,7 +135,11 @@ function Form(props) {
     async function addPost() {
       const data = await dataServer('post', objLivro)
       if (data === 'erro')
-        alert.error('Tivemos um problema ao modificar seu livro!')
+        setMensagem({
+          open: true,
+          texto: 'Tivemos um problema ao adicionar seu livro!',
+          tipo: 'error',
+        })
       else {
         limparCampos()
 
@@ -140,77 +160,86 @@ function Form(props) {
   }
 
   return (
-    <form onSubmit={inserirLivroServer}>
-      <Grid container spacing={4} alignItems="center">
-        <Grid item>
-          <TextField
-            id="nome"
-            label="Nome do Livro"
-            variant="outlined"
-            defaultValue={nome}
-            onChange={(e) => setNome(e.target.value)}
-            onFocus={() => setEstadoInput(true)}
-            onBlur={mudaEstadoInput}
-            InputLabelProps={{ shrink: estadoInput }}
-            required
-          />
+    <>
+      <Toast
+        open={mensagem.open}
+        handleClose={() => setMensagem({ ...mensagem, open: false })}
+        severity={mensagem.tipo}
+      >
+        {mensagem.texto}
+      </Toast>
+      <form onSubmit={inserirLivroServer} className={style.form}>
+        <Grid container spacing={4} alignItems="center">
+          <Grid item>
+            <TextField
+              id="nome"
+              label="Nome do Livro"
+              variant="outlined"
+              defaultValue={nome}
+              onChange={(e) => setNome(e.target.value)}
+              onFocus={() => setEstadoInput(true)}
+              onBlur={mudaEstadoInput}
+              InputLabelProps={{ shrink: estadoInput }}
+              required
+            />
+          </Grid>
+          <Grid item>
+            <TextField
+              id="autor"
+              label="Nome do Autor"
+              variant="outlined"
+              defaultValue={autor}
+              onChange={(e) => setAutor(e.target.value)}
+              onFocus={() => setEstadoInput(true)}
+              onBlur={mudaEstadoInput}
+              InputLabelProps={{ shrink: estadoInput }}
+              required
+            />
+          </Grid>
+          <Grid item>
+            <TextField
+              id="anoLancamento"
+              label="Ano do Lançamento"
+              variant="outlined"
+              type="number"
+              defaultValue={anoLancamento}
+              onChange={(e) => {
+                setAnoLancamento(e.target.value)
+                setEstadoInput(true)
+              }}
+              onFocus={() => setEstadoInput(true)}
+              onBlur={mudaEstadoInput}
+              inputProps={{ min: 1800, max: Data.getFullYear(), step: 1 }}
+              InputLabelProps={{ shrink: estadoInput }}
+              required
+            />
+          </Grid>
+          <Grid item>
+            <TextField
+              id="preco"
+              label="Preço do Livro"
+              variant="outlined"
+              type="number"
+              defaultValue={preco}
+              onChange={(e) => {
+                setPreco(e.target.value)
+                setEstadoInput(true)
+              }}
+              onFocus={() => setEstadoInput(true)}
+              onBlur={mudaEstadoInput}
+              inputProps={{ min: 1, max: 1000, step: 0.01 }}
+              InputLabelProps={{ shrink: estadoInput }}
+              required
+            />
+          </Grid>
+          <Grid item>
+            <Button variant="contained" color="primary" type="submit">
+              Salvar
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item>
-          <TextField
-            id="autor"
-            label="Nome do Autor"
-            variant="outlined"
-            defaultValue={autor}
-            onChange={(e) => setAutor(e.target.value)}
-            onFocus={() => setEstadoInput(true)}
-            onBlur={mudaEstadoInput}
-            InputLabelProps={{ shrink: estadoInput }}
-            required
-          />
-        </Grid>
-        <Grid item>
-          <TextField
-            id="anoLancamento"
-            label="Ano do Lançamento"
-            variant="outlined"
-            type="number"
-            defaultValue={anoLancamento}
-            onChange={(e) => {
-              setAnoLancamento(e.target.value)
-              setEstadoInput(true)
-            }}
-            onFocus={() => setEstadoInput(true)}
-            onBlur={mudaEstadoInput}
-            inputProps={{ min: 1800, max: Data.getFullYear(), step: 1 }}
-            InputLabelProps={{ shrink: estadoInput }}
-            required
-          />
-        </Grid>
-        <Grid item>
-          <TextField
-            id="preco"
-            label="Preço do Livro"
-            variant="outlined"
-            type="number"
-            defaultValue={preco}
-            onChange={(e) => {
-              setPreco(e.target.value)
-              setEstadoInput(true)
-            }}
-            onFocus={() => setEstadoInput(true)}
-            onBlur={mudaEstadoInput}
-            inputProps={{ min: 1, max: 1000, step: 0.01 }}
-            InputLabelProps={{ shrink: estadoInput }}
-            required
-          />
-        </Grid>
-        <Grid item>
-          <Button variant="contained" color="primary" type="submit">
-            Salvar
-          </Button>
-        </Grid>
-      </Grid>
-    </form>
+      </form>
+    </>
   )
 }
 

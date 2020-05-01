@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { useAlert } from 'react-alert'
+
+import Toast from './Toast'
 
 import Tabela from '../components/Tabela'
 
 import dataServer from '../function/dataServer'
 
 export default function Lista(props) {
-  const alert = useAlert()
-
   const [lista, setLista] = useState([])
+  const [mensagem, setMensagem] = useState({
+    open: false,
+    texto: '',
+    tipo: 'success',
+  })
 
   const { prop } = props
 
@@ -32,7 +36,11 @@ export default function Lista(props) {
       const axiosData = await dataServer('get')
 
       if (axiosData === 'erro') {
-        alert.error('Tivemos um problema ao se conectar com o server')
+        setMensagem({
+          open: true,
+          texto: 'Tivemos um problema ao se conectar com o server',
+          tipo: 'error',
+        })
       } else {
         setLista(axiosData)
       }
@@ -43,6 +51,13 @@ export default function Lista(props) {
 
   return (
     <div className="lista">
+      <Toast
+        open={mensagem.open}
+        handleClose={() => setMensagem({ open: false })}
+        severity={mensagem.tipo}
+      >
+        {mensagem.texto}
+      </Toast>
       <Tabela campos={campos} dados={lista} />
     </div>
   )

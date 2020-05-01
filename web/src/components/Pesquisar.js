@@ -3,8 +3,17 @@ import React, { useState, memo } from 'react'
 import Grid from '@material-ui/core/Grid'
 import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
+import { makeStyles } from '@material-ui/core/styles'
+
+const useStyle = makeStyles({
+  pesquisa: {
+    marginBottom: '25px',
+  },
+})
 
 function Pesquisar(prop) {
+  const style = useStyle()
+
   const [pesquisar, setPesquisar] = useState('')
   const [estadoBotao, setEstadoBotao] = useState()
   const [estadoInput, setEstadoInput] = useState(false)
@@ -48,7 +57,7 @@ function Pesquisar(prop) {
   }
 
   return (
-    <form onSubmit={enviarPesquisa}>
+    <form onSubmit={enviarPesquisa} className={style.pesquisa}>
       <Grid container spacing={3} alignItems="center">
         <Grid item>
           <TextField

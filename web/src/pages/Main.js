@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { useAlert } from 'react-alert'
 
+import { makeStyles } from '@material-ui/core/styles'
+
+import Toast from '../components/Toast'
 import Header from '../components/Header'
 import Pesquisar from '../components/Pesquisar'
 import Tabela from '../components/Tabela'
@@ -8,13 +10,27 @@ import Form from '../components/Form'
 
 import dataServer from '../function/dataServer'
 
+const useStyle = makeStyles({
+  pagina: {
+    width: '1920px',
+    height: '700px',
+    marginTop: '50px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
+})
+
 export default function Main() {
-  const alert = useAlert()
+  const style = useStyle()
 
   const [livros, setLivros] = useState([])
   const [livroModf, setLivroModf] = useState([])
   const [recarregar, setRecarregar] = useState(false)
-
+  const [mensagem, setMensagem] = useState({
+    open: false,
+    texto: '',
+    tipo: 'success',
+  })
   const campos = useMemo(
     () => [
       {
@@ -52,7 +68,11 @@ export default function Main() {
 
   function adicionarLivroPagina(objLivro) {
     setLivros([...livros, objLivro])
-    alert.success('Foi adicionado o livro com sucesso!')
+    setMensagem({
+      open: true,
+      texto: 'Foi adicionando seu livro com sucesso!',
+      tipo: 'success',
+    })
   }
 
   function modificarLivroPagina(objLivro) {
@@ -63,9 +83,12 @@ export default function Main() {
       }
       return valor
     })
-
+    setMensagem({
+      open: true,
+      texto: 'Seu livro foi modificado!',
+      tipo: 'success',
+    })
     setLivros(mapeado)
-    alert.success('Foi modificado o livro com sucesso!')
   }
 
   const removerLivroPagina = useCallback((id) => {
@@ -74,17 +97,29 @@ export default function Main() {
         return livro._id !== id
       }),
     )
-    alert.success('Foi removido o livro com sucesso!')
+    setMensagem({
+      open: true,
+      texto: 'Seu livro foi removido!',
+      tipo: 'success',
+    })
   }, [])
 
   const pesquisarLivroServer = useCallback((nome) => {
     async function fetchData() {
       const axiosData = await dataServer('get', {}, nome)
       if (axiosData === 'erro') {
-        alert.error('Ops, não existe esse livro')
+        setMensagem({
+          open: true,
+          texto: 'Tivemos um problema ao encontrar seu livro',
+          tipo: 'error',
+        })
       } else {
-        alert.success('Foi achado seu livro!')
         setLivros(axiosData)
+        setMensagem({
+          open: true,
+          texto: 'Seu livro foi encontrado!',
+          tipo: 'success',
+        })
       }
     }
     fetchData()
@@ -98,20 +133,35 @@ export default function Main() {
     async function fetchData() {
       const axiosData = await dataServer('get')
       if (axiosData === 'erro') {
-        alert.error('Tivemos um problema ao se conectar com o server')
+        setMensagem({
+          open: true,
+          texto: 'Não foi possivel se conectar ao server!',
+          tipo: 'error',
+        })
       } else {
         setLivros(axiosData)
-        alert.info('Bem vindo a casa do código')
       }
     }
     fetchData()
+    setMensagem({
+      open: true,
+      texto: 'Bem vindo a casa do código',
+      tipo: 'info',
+    })
   }, [recarregar])
 
   return (
-    <div className="Main">
+    <div>
       <>
+        <Toast
+          open={mensagem.open}
+          handleClose={() => setMensagem({ ...mensagem, open: false })}
+          severity={mensagem.tipo}
+        >
+          {mensagem.texto}
+        </Toast>
         <Header />
-        <div className="container">
+        <div className={style.pagina}>
           <Pesquisar
             pesquisarLivroServer={pesquisarLivroServer}
             recarregarLivroServer={recarregarLivroServer}
