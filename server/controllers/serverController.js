@@ -22,15 +22,43 @@ module.exports = {
   },
 
   async adicionarLivro(req, res) {
-    const nome = req.body.nome
-    const verificarLivro = await Livro.find({ nome })
-    if (verificarLivro.length > 0) {
-      return res
-        .status(409)
-        .json({ resposta: 'O livro ja foi adicionando anteriormente!' })
+    let nome = req.body.nome
+    if (nome === undefined) {
+      async function verifica(nomes) {
+        let existe = false
+
+        for (let i = 0; i < nomes.length; i++) {
+          if (existe) {
+            break
+          } else {
+            let livro = await Livro.find({ nome: nomes[i] })
+            if (livro.length > 0) {
+              existe = true
+            }
+          }
+        }
+
+        if (existe) {
+          return res.status(409).json({
+            resposta: 'Um dos livros ja foi adicionando anteriormente!',
+          })
+        }
+        await Livro.create(req.body)
+        return res.json({ resposta: 'Seu livro foi adicionado' })
+      }
+      const nomes = req.body.map((valor) => valor.nome)
+
+      return verifica(nomes)
+    } else {
+      const verificarLivro = await Livro.find({ nome })
+      if (verificarLivro.length > 0) {
+        return res
+          .status(409)
+          .json({ resposta: 'O livro ja foi adicionando anteriormente!' })
+      }
+      await Livro.create(req.body)
+      return res.json({ resposta: 'Seu livro foi adicionado' })
     }
-    await Livro.create(req.body)
-    return res.json({ resposta: 'Seu livro foi adicionado' })
   },
 
   async modificarLivro(req, res) {

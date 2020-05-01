@@ -1,5 +1,7 @@
 //Importando as Dependecias
 const { Schema, model } = require('mongoose')
+const mongoose = require('mongoose')
+mongoose.Promise = global.Promise
 
 //Criando um Schema
 const LivroSchema = new Schema({
